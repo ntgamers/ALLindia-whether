@@ -1,69 +1,366 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NT Base - India Map Explorer</title>
     <title>3D India Map</title>
-    <title>NT Base - Weather Dashboard</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
         body {
+            background-color: #0d1117;
+            color: #ffffff;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- तेरा ओरिजिनल "NT Base" प्रीमियम लॉगिन स्क्रीन (फोटो के जैसा हूबहू) --- */
+        #login-screen {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: radial-gradient(circle at center, #1f293d 0%, #0d1117 100%);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 100;
+        }
+
+        .login-card {
+            background: rgba(22, 27, 34, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 40px 30px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+            text-align: center;
+            width: 380px;
+        }
+
+        .login-logo {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .login-card h2 {
+            font-size: 22px;
+            font-weight: 600;
+            color: #f0f6fc;
+            margin-bottom: 6px;
+        }
+
+        .login-card p {
+            font-size: 13px;
+            color: #8b949e;
+            margin-bottom: 30px;
+        }
+
+        .btn-auth {
+            width: 100%;
+            padding: 12px 16px;
+            margin-bottom: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-google {
+            background: #ffffff;
+            color: #24292e;
+        }
+
+        .btn-google:hover {
+            background: #f3f4f6;
+        }
+
+        .btn-guest {
+            background: rgba(255, 255, 255, 0.08);
+            color: #f0f6fc;
+        }
+
+        .btn-guest:hover {
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        /* --- लॉगिन के बाद दिखने वाला मेन डैशबोर्ड (कलरफुल 2D मैप) --- */
+        #app-screen {
+            display: none;
+            height: 100vh;
+            flex-direction: column;
+        }
+
+        .top-navbar {
+            height: 65px;
+            background: #161b22;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 25px;
+            border-bottom: 1px solid #30363d;
+            z-index: 10;
+        }
+
+        .brand-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #58a6ff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .search-container {
+            position: relative;
+            width: 300px;
+        }
+
+        .search-container input {
+            width: 100%;
+            background: #0d1117;
+            border: 1px solid #30363d;
+            color: #fff;
+            padding: 8px 14px 8px 35px;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .search-container input:focus {
+            border-color: #58a6ff;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #8b949e;
+            font-size: 14px;
+        }
+
+        .logout-btn {
+            background: rgba(248, 81, 73, 0.15);
+            color: #f85149;
+            border: 1px solid rgba(248, 81, 73, 0.4);
+            padding: 7px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            transition: 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: #f85149;
+            color: #fff;
+        }
+
+        /* मैप व्यूपोर्ट (Zoom & Pan) */
+        #map-viewport {
+            flex: 1;
+            position: relative;
             margin: 0;
             overflow: hidden;
+            background: #090d16;
+            cursor: grab;
             background-color: #050505;
             font-family: sans-serif;
         }
+
+        #map-viewport:active {
+            cursor: grabbing;
+        }
+
+        #map-container {
         #info {
             position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transform-origin: center center;
+            transition: transform 0.05s ease-out;
+        }
+
+        /* कलरफुल 2D इंडिया मैप ग्रिड / लेआउट कैनवास */
+        .map-board {
+            width: 750px;
+            height: 750px;
+            position: relative;
+            background: radial-gradient(circle, #161f30 0%, #0b111a 100%);
+            border-radius: 24px;
+            border: 2px solid #30363d;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.7);
+        }
+
+        .map-heading {
+            position: absolute;
+            top: 20px;
             top: 15px;
             width: 100%;
             text-align: center;
+            font-size: 15px;
+            font-weight: bold;
+            color: #8b949e;
+            letter-spacing: 1px;
+        }
+
+        /* हर राज्य के लिए अलग-अलग सुंदर रंग और स्टाइल */
+        .state-box {
+            position: absolute;
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .state-box:hover {
+            transform: scale(1.1);
+            z-index: 10;
+            filter: brightness(1.2);
+        }
+
+        /* अलग-अलग राज्यों के डिस्टिंक्ट कलर्स और पोजीशंस */
+        #st-maharashtra { top: 52%; left: 32%; background: #2ea043; color: white; }
+        #st-gujarat     { top: 42%; left: 20%; background: #1f6feb; color: white; }
+        #st-rajasthan   { top: 30%; left: 23%; background: #9e6a03; color: white; }
+        #st-delhi       { top: 24%; left: 38%; background: #8957e5; color: white; }
+        #st-uttar-pradesh { top: 35%; left: 45%; background: #db6d28; color: white; }
+        #st-karnataka   { top: 68%; left: 36%; background: #f85149; color: white; }
+        #st-tamil-nadu  { top: 80%; left: 42%; background: #3fb950; color: white; }
+        #st-west-bengal { top: 45%; left: 68%; background: #a371f7; color: white; }
+        #st-punjab      { top: 18%; left: 32%; background: #e3b341; color: black; }
+
+        /* साइड ज़ूम कंट्रोल्स */
+        .zoom-controls {
+            position: absolute;
+            bottom: 25px;
+            right: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            z-index: 10;
+        }
+
+        .zoom-btn {
+            background: #161b22;
+            color: white;
+            border: 1px solid #30363d;
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            font-size: 20px;
             color: #ffffff;
             font-size: 18px;
             font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+        }
+
+        .zoom-btn:hover {
+            background: #30363d;
+            border-color: #58a6ff;
             pointer-events: none;
             text-shadow: 0 2px 4px rgba(0,0,0,0.8);
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-        body { background: linear-gradient(135deg, #0f2027, #203a43, #2c5364); min-height: 100vh; display: flex; justify-content: center; align-items: center; color: #fff; padding: 20px; }
-        .card { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(12px); border-radius: 20px; padding: 40px 30px; width: 100%; max-width: 420px; box-shadow: 0 15px 35px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); text-align: center; }
-        h2 { font-size: 26px; font-weight: 600; margin-bottom: 8px; color: #38bdf8; }
-        p.subtitle { font-size: 14px; color: #94a3b8; margin-bottom: 30px; }
-        
-        button { width: 100%; padding: 14px; margin-top: 12px; border-radius: 12px; border: none; font-size: 15px; font-weight: 600; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        
-        .btn-google { background: #fff; color: #333; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        .btn-google:hover { background: #f1f5f9; transform: translateY(-1px); }
-        
-        .btn-guest { background: rgba(255, 255, 255, 0.08); color: #cbd5e1; border: 1px solid rgba(255,255,255,0.2); }
-        .btn-guest:hover { background: rgba(255, 255, 255, 0.15); color: #fff; }
-        
-        .btn-primary { background: #38bdf8; color: #0f172a; margin-top: 15px; }
-        .btn-primary:hover { background: #7dd3fc; }
-        
-        .btn-danger { background: #ef4444; color: #fff; margin-top: 25px; }
-        .btn-danger:hover { background: #dc2626; }
-
-        .hidden { display: none; }
-        
-        .input-group { margin-bottom: 15px; text-align: left; }
-        input { width: 100%; padding: 12px 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.08); color: #fff; font-size: 15px; outline: none; }
-        input::placeholder { color: #94a3b8; }
-        
-        .weather-box { margin-top: 20px; background: rgba(0,0,0,0.25); padding: 20px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); }
-        .temp { font-size: 48px; font-weight: 700; margin: 10px 0; color: #38bdf8; }
-        .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; text-align: left; font-size: 14px; }
-        .detail-item { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; }
     </style>
 </head>
 <body>
 
+    <!-- 1. ऑरिजिनल NT Base लॉगिन स्क्रीन (फोटो के अनुसार) -->
+    <div id="login-screen">
+        <div class="login-card">
+            <div class="login-logo">⛅</div>
+            <h2>NT Base</h2>
+            <p>Sign In to access live weather dashboard</p>
+            
+            <button class="btn-auth btn-google" onclick="handleLogin()">
+                <svg height="16" width="16" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"/></svg>
+                Continue with Google
+            </button>
+            
+            <button class="btn-auth btn-guest" onclick="handleLogin()">
+                👤 Continue as Guest
+            </button>
+        </div>
+    </div>
+
+    <!-- 2. लॉगिन के बाद का मैप डैशबोर्ड -->
+    <div id="app-screen">
+        <div class="top-navbar">
+            <div class="brand-title">📍 NT Base Map Dashboard</div>
+            <div class="search-container">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="searchInput" placeholder="Search state (e.g. Maharashtra)..." onkeyup="filterStates()">
+            </div>
+            <button class="logout-btn" onclick="handleLogout()">Log Out</button>
+        </div>
+
+        <div id="map-viewport">
+            <div id="map-container">
+                <div class="map-board">
+                    <div class="map-heading">🇮🇳 INDIA 2D INTERACTIVE REGIONAL MAP</div>
+                    
+                    <!-- अलग-अलग रंगों वाले राज्य -->
+                    <div id="st-punjab" class="state-box" onclick="selectState('Punjab')">Punjab</div>
+                    <div id="st-delhi" class="state-box" onclick="selectState('Delhi')">Delhi</div>
+                    <div id="st-rajasthan" class="state-box" onclick="selectState('Rajasthan')">Rajasthan</div>
+                    <div id="st-gujarat" class="state-box" onclick="selectState('Gujarat')">Gujarat</div>
+                    <div id="st-maharashtra" class="state-box" onclick="selectState('Maharashtra')">Maharashtra 📍</div>
+                    <div id="st-uttar-pradesh" class="state-box" onclick="selectState('Uttar Pradesh')">Uttar Pradesh</div>
+                    <div id="st-karnataka" class="state-box" onclick="selectState('Karnataka')">Karnataka</div>
+                    <div id="st-tamil-nadu" class="state-box" onclick="selectState('Tamil Nadu')">Tamil Nadu</div>
+                    <div id="st-west-bengal" class="state-box" onclick="selectState('West Bengal')">West Bengal</div>
+                </div>
+            </div>
     <div id="info">3D India Map - Interactive Model</div>
 
+            <!-- ज़ूम कंट्रोल्स -->
+            <div class="zoom-controls">
+                <button class="zoom-btn" onclick="zoomIn()">+</button>
+                <button class="zoom-btn" onclick="zoomOut()">-</button>
+            </div>
+        </div>
+    </div>
     <!-- Three.js CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <!-- OrbitControls CDN -->
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
     <script>
+        // लॉगिन / लॉगआउट लॉजिक
+        function handleLogin() {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('app-screen').style.display = 'flex';
+        }
+
+        function handleLogout() {
+            document.getElementById('app-screen').style.display = 'none';
+            document.getElementById('login-screen').style.display = 'flex';
+        }
         // 1. सीन, कैमरा और रेंडरर सेटअप
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0x0b0f19);
@@ -107,6 +404,9 @@
             else indiaShape.lineTo(pt[0], pt[1]);
         });
 
+        function selectState(stateName) {
+            alert("Selected State: " + stateName + "\nExplore districts and details here!");
+        }
         const extrudeSettings = {
             steps: 2,
             depth: 1.5,
@@ -114,58 +414,6 @@
             bevelThickness: 0.4,
             bevelSize: 0.4,
             bevelSegments: 3
-    <!-- Auth / Login Screen -->
-    <div id="auth-screen" class="card">
-        <h2><i class="fa-solid fa-cloud-sun"></i> NT Base</h2>
-        <p class="subtitle">Sign in to access live weather dashboard</p>
-        
-        <!-- Google Login Button -->
-        <button class="btn-google" onclick="loginWithGoogle()">
-            <svg width="18" height="18" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
-                <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-                <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-                <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-                <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.46-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-            </svg>
-            Continue with Google
-        </button>
-
-        <!-- Guest Login Button -->
-        <button class="btn-guest" onclick="loginAsGuest()">
-            <i class="fa-solid fa-user-shield"></i> Continue as Guest
-        </button>
-    </div>
-
-    <!-- Weather Dashboard Screen -->
-    <div id="dashboard" class="card hidden">
-        <h3 id="welcome-msg" style="font-weight: 500; color: #38bdf8; font-size: 18px;">Welcome</h3>
-        <p style="font-size: 13px; color: #94a3b8; margin-bottom: 20px;">Live Weather Information Portal</p>
-        
-        <div class="input-group">
-            <input type="text" id="city" placeholder="Enter city name (e.g. Mumbai, Delhi)">
-        </div>
-        <button class="btn-primary" onclick="getWeather()"><i class="fa-solid fa-magnifying-glass"></i> Search Weather</button>
-
-        <div id="weather-result" class="weather-box hidden"></div>
-        
-        <button class="btn-danger" onclick="logoutUser()"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
-    </div>
-
-    <!-- Firebase & App Logic Script -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-
-        // आपकी दी हुई ओरिजिनल Firebase Config
-        const firebaseConfig = {
-            apiKey: "AIzaSyA8j5woHekph8pHDeWBszrwP_3PypdfkhE",
-            authDomain: "nt-base.firebaseapp.com",
-            databaseURL: "https://nt-base-default-rtdb.firebaseio.com",
-            projectId: "nt-base",
-            storageBucket: "nt-base.firebasestorage.app",
-            messagingSenderId: "348200219253",
-            appId: "1:348200219253:web:e285a412904120b08f7e3c",
-            measurementId: "G-TN0X7VXJBL"
         };
 
         const geometry = new THREE.ExtrudeGeometry(indiaShape, extrudeSettings);
@@ -179,105 +427,87 @@
             wireframe: false
         });
 
+        // ज़ूम और पैन (Zoom & Pan) इंजन
+        let scale = 1;
+        const mapContainer = document.getElementById('map-container');
+        const viewport = document.getElementById('map-viewport');
         const indiaMesh = new THREE.Mesh(geometry, material);
         scene.add(indiaMesh);
 
+        function zoomIn() {
+            if (scale < 2.5) {
+                scale += 0.25;
+                updateTransform();
+            }
+        }
         // बेस ग्रिड या प्लेटफॉर्म
         const gridHelper = new THREE.GridHelper(50, 50, 0xff0000, 0x333333);
         gridHelper.position.z = -1.5;
         gridHelper.rotation.x = Math.PI / 2;
         scene.add(gridHelper);
 
+        function zoomOut() {
+            if (scale > 0.6) {
+                scale -= 0.25;
+                updateTransform();
+            }
+        }
         // 5. रिस्पॉन्सिव विंडो रिसाइज
         window.addEventListener('resize', onWindowResize, false);
 
+        function updateTransform() {
+            mapContainer.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
         function onWindowResize() {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const googleProvider = new GoogleAuthProvider();
-        const WEATHER_API_KEY = "651f547c474636f706ba9b89eaf70fb0";
-
-        // 1. Google Login
-        window.loginWithGoogle = function() {
-            signInWithPopup(auth, googleProvider)
-                .then((result) => {
-                    let user = result.user;
-                    openDashboard(user.displayName || user.email);
-                })
-                .catch((error) => {
-                    alert("Google Login Failed: " + error.message);
-                });
         }
 
-        // 2. Guest Login
-        window.loginAsGuest = function() {
-            openDashboard("Guest User");
-        }
+        let isDragging = false;
+        let startX, startY;
+        let translateX = 0, translateY = 0;
 
+        viewport.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            startX = e.clientX - translateX;
+            startY = e.clientY - translateY;
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            translateX = e.clientX - startX;
+            translateY = e.clientY - startY;
+            mapContainer.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+        });
+
+        window.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
         // 6. एनीमेशन लूप
         function animate() {
             requestAnimationFrame(animate);
             
             // हल्का-हल्का रोटेशन ताकि मॉडल जीवंत लगे
             indiaMesh.rotation.z += 0.005;
-        // 3. Logout
-        window.logoutUser = function() {
-            signOut(auth).then(() => {
-                document.getElementById('dashboard').classList.add('hidden');
-                document.getElementById('auth-screen').classList.remove('hidden');
-                document.getElementById('weather-result').classList.add('hidden');
-                document.getElementById('city').value = "";
-            }).catch((error) => {
-                console.log(error);
-            });
-        }
 
+        // सर्च फिल्टर फंक्शन (ऊपर सर्च बार से राज्य ढूंढने के लिए)
+        function filterStates() {
+            let query = document.getElementById('searchInput').value.toLowerCase();
+            let boxes = document.querySelectorAll('.state-box');
+            boxes.forEach(box => {
+                let text = box.innerText.toLowerCase();
+                if (text.includes(query)) {
+                    box.style.display = 'block';
+                    box.style.opacity = '1';
+                } else {
+                    box.style.opacity = query === '' ? '1' : '0.2';
+                }
+            });
             controls.update();
             renderer.render(scene, camera);
-        function openDashboard(name) {
-            document.getElementById('auth-screen').classList.add('hidden');
-            document.getElementById('dashboard').classList.remove('hidden');
-            document.getElementById('welcome-msginnerText', 'Welcome, ' + name);
-            document.getElementById('welcome-msg').innerText = "Welcome, " + name;
         }
 
         animate();
-        // 4. Weather API Fetch
-        window.getWeather = async function() {
-            let city = document.getElementById("city").value;
-            let resultDiv = document.getElementById("weather-result");
-
-            if (city.trim() === "") {
-                alert("Please enter a city name.");
-                return;
-            }
-
-            try {
-                let response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${WEATHER_API_KEY}`);
-                let data = await response.json();
-
-                if (data.cod === 200) {
-                    resultDiv.classList.remove("hidden");
-                    resultDiv.innerHTML = `
-                        <h3 style="font-size: 20px; color: #38bdf8;"><i class="fa-solid fa-location-dot"></i> ${data.name}, ${data.sys.country}</h3>
-                        <div class="temp">${Math.round(data.main.temp)}°C</div>
-                        <p style="text-transform: capitalize; color: #94a3b8; margin-bottom: 10px;">${data.weather[0].description}</p>
-                        
-                        <div class="details-grid">
-                            <div class="detail-item"><i class="fa-solid fa-droplet"></i> Humidity: <b>${data.main.humidity}%</b></div>
-                            <div class="detail-item"><i class="fa-solid fa-wind"></i> Wind: <b>${data.wind.speed} m/s</b></div>
-                        </div>
-                    `;
-                } else {
-                    alert("City not found! Please check spelling.");
-                }
-            } catch (error) {
-                alert("Error fetching weather data.");
-            }
-        }
     </script>
 </body>
 </html>
