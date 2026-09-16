@@ -218,7 +218,6 @@
 </head>
 <body>
 
-    <!-- 1. लॉगिन स्क्रीन -->
     <div id="login-screen">
         <div class="login-card">
             <div class="login-logo">⛅</div>
@@ -236,7 +235,6 @@
         </div>
     </div>
 
-    <!-- 2. डैशबोर्ड स्क्रीन -->
     <div id="dashboard-screen">
         <div class="dashboard-card">
             <h2>Welcome, NT GAMER</h2>
@@ -250,7 +248,6 @@
             <button class="btn-action btn-search" onclick="getWeather()">Search Weather</button>
             <button class="btn-action btn-logout" onclick="logout()">🚪 Logout</button>
 
-            <!-- वेदर आउटपुट कार्ड -->
             <div id="weatherResult" class="weather-result">
                 <h3 id="cityName">--</h3>
                 <div class="weather-temp" id="weatherTemp">--°C</div>
@@ -282,7 +279,7 @@
             }
 
             document.getElementById('cityName').innerText = city.toUpperCase() + ", IN";
-            document.getElementById('weatherTemp').innerText = "23°C";
+            document.getElementById('weatherTemp').innerText = "28°C";
             document.getElementById('weatherDesc').innerText = "Few Clouds";
             resultBox.style.display = "block";
         }
