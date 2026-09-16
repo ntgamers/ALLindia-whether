@@ -3,108 +3,95 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>All India Weather</title>
+    <title>All India Weather Dashboard</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #121212;
-            color: #ffffff;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .card {
-            background-color: #1e1e1e;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
-            text-align: center;
-            width: 320px;
-        }
-        h2 { margin-bottom: 20px; color: #00bcd4; }
-        input {
-            width: 90%;
-            padding: 10px;
-            margin: 8px 0;
-            border-radius: 6px;
-            border: 1px solid #333;
-            background: #2b2b2b;
-            color: #fff;
-        }
-        button {
-            width: 95%;
-            padding: 10px;
-            margin-top: 10px;
-            border: none;
-            border-radius: 6px;
-            background-color: #00bcd4;
-            color: #fff;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        button.guest { background-color: #4caf50; }
+        body { font-family: Arial, sans-serif; background: #f4f7f6; text-align: center; margin: 0; padding: 20px; }
+        .card { background: white; max-width: 400px; margin: 50px auto; padding: 25px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        input, button { padding: 10px; width: 80%; margin: 8px 0; border-radius: 6px; border: 1px solid #ccc; }
+        button { background: #007bff; color: white; border: none; cursor: pointer; font-weight: bold; }
+        button:hover { background: #0056b3; }
         .hidden { display: none; }
-        #result { margin-top: 15px; font-size: 1.1em; color: #ffeb3b; }
+        .weather-info { margin-top: 15px; text-align: left; background: #eef2f5; padding: 15px; border-radius: 8px; }
     </style>
 </head>
 <body>
 
-    <div class="card">
+    <!-- Login Screen -->
+    <div id="login-screen" class="card">
         <h2>All India Weather</h2>
+        <input type="text" id="username" placeholder="Enter Username">
+        <button onclick="login()">Login</button>
+        <button onclick="loginGuest()" style="background: #6c757d;">Continue as Guest</button>
+    </div>
 
-        <!-- Login Box -->
-        <div id="auth-box">
-            <input type="text" id="username" placeholder="Enter Username">
-            <button onclick="login('custom')">Login</button>
-            <button class="guest" onclick="login('guest')">Continue as Guest</button>
-        </div>
+    <!-- Weather Dashboard Screen -->
+    <div id="dashboard" class="card hidden">
+        <h2 id="welcome-msg">Welcome</h2>
+        <input type="text" id="city" placeholder="Enter City Name (e.g. Pune, Delhi)">
+        <button onclick="getWeather()">Search Weather</button>
 
-        <!-- Weather Box -->
-        <div id="weather-box" class="hidden">
-            <p id="user-display" style="color:#aaa;"></p>
-            <input type="text" id="city" placeholder="Enter City (e.g. Pune)">
-            <button onclick="getWeather()">Search Weather</button>
-            <div id="result"></div>
-        </div>
+        <div id="weather-result" class="weather-info hidden"></div>
+        <button onclick="logout()" style="background: #dc3545; margin-top: 15px;">Logout</button>
     </div>
 
     <script>
-        function login(type) {
-            let name = type === 'guest' ? 'guest' : document.getElementById('username').value;
-            if (!name) name = 'Guest';
+        const API_KEY = "651f547c474636f706ba9b89eaf70fb0";
 
-            fetch('/api/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: name })
-            })
-            .then(res => res.json())
-            .then(data => {
-                document.getElementById('auth-box').classList.add('hidden');
-                document.getElementById('weather-box').classList.remove('hidden');
-                document.getElementById('user-display').innerText = "Logged in as: " + data.message;
-            });
+        function login() {
+            let user = document.getElementById("username").value;
+            if (user.trim() !== "") {
+                showDashboard(user);
+            } else {
+                alert("Please enter a username or continue as guest.");
+            }
         }
 
-        function getWeather() {
-            let city = document.getElementById('city').value || 'Mumbai';
-            fetch(`/api/weather?city=${city}`)
-            .then(res => res.json())
-            .then(data => {
-                if (data.main) {
-                    document.getElementById('result').innerHTML = `
-                        <strong>${data.name}</strong><br>
-                        Temp: ${data.main.temp}°C<br>
-                        Weather: ${data.weather[0].description}
+        function loginGuest() {
+            showDashboard("Guest User");
+        }
+
+        function showDashboard(username) {
+            document.getElementById("login-screen").classList.add("hidden");
+            document.getElementById("dashboard").classList.remove("hidden");
+            document.getElementById("welcome-msg").innerText = "Welcome, " + username + "!";
+        }
+
+        function logout() {
+            document.getElementById("dashboard").classList.add("hidden");
+            document.getElementById("login-screen").classList.remove("hidden");
+            document.getElementById("weather-result").classList.add("hidden");
+            document.getElementById("username").value = "";
+        }
+
+        async function getWeather() {
+            let city = document.getElementById("city").value;
+            let resultDiv = document.getElementById("weather-result");
+
+            if (city.trim() === "") {
+                alert("Please enter a city name.");
+                return;
+            }
+
+            try {
+                let response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${API_KEY}`);
+                let data = await response.json();
+
+                if (data.cod === 200) {
+                    resultDiv.classList.remove("hidden");
+                    resultDiv.innerHTML = `
+                        <h3>${data.name}, ${data.sys.country}</h3>
+                        <p><b>Temperature:</b> ${data.main.temp} °C</p>
+                        <p><b>Weather:</b> ${data.weather[0].description}</p>
+                        <p><b>Humidity:</b> ${data.main.humidity}%</p>
+                        <p><b>Wind Speed:</b> ${data.wind.speed} m/s</p>
                     `;
                 } else {
-                    document.getElementById('result').innerText = "City not found!";
+                    alert("City not found. Please check spelling.");
                 }
-            });
+            } catch (error) {
+                alert("Unable to fetch weather data.");
+            }
         }
     </script>
-
 </body>
 </html>
