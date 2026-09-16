@@ -3,30 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Map App - Login & Interactive Map</title>
+    <title>NT Base - India Map Explorer</title>
     <style>
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
 
         body {
-            background-color: #121212;
+            background-color: #0d1117;
             color: #ffffff;
             height: 100vh;
             overflow: hidden;
         }
 
-        /* --- पुराना लॉगिन स्क्रीन स्टाइल (बिल्कुल सेफ और वैसा ही) --- */
+        /* --- तेरा ओरिजिनल "NT Base" प्रीमियम लॉगिन स्क्रीन (फोटो के जैसा हूबहू) --- */
         #login-screen {
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background: #121212;
+            background: radial-gradient(circle at center, #1f293d 0%, #0d1117 100%);
             position: absolute;
             top: 0;
             left: 0;
@@ -35,116 +34,148 @@
         }
 
         .login-card {
-            background: #1e1e1e;
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+            background: rgba(22, 27, 34, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 40px 30px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
             text-align: center;
-            width: 350px;
-            border: 1px solid #2a2a2a;
+            width: 380px;
+        }
+
+        .login-logo {
+            font-size: 28px;
+            margin-bottom: 8px;
         }
 
         .login-card h2 {
-            margin-bottom: 25px;
-            color: #fff;
-            font-size: 24px;
+            font-size: 22px;
+            font-weight: 600;
+            color: #f0f6fc;
+            margin-bottom: 6px;
         }
 
-        .btn {
+        .login-card p {
+            font-size: 13px;
+            color: #8b949e;
+            margin-bottom: 30px;
+        }
+
+        .btn-auth {
             width: 100%;
-            padding: 12px;
-            margin-bottom: 15px;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: bold;
+            padding: 12px 16px;
+            margin-bottom: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
             cursor: pointer;
-            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.2s ease;
         }
 
         .btn-google {
             background: #ffffff;
-            color: #333;
+            color: #24292e;
         }
 
         .btn-google:hover {
-            background: #f1f1f1;
+            background: #f3f4f6;
         }
 
         .btn-guest {
-            background: #3b82f6;
-            color: white;
+            background: rgba(255, 255, 255, 0.08);
+            color: #f0f6fc;
         }
 
         .btn-guest:hover {
-            background: #2563eb;
+            background: rgba(255, 255, 255, 0.12);
         }
 
-        /* --- मेन ऐप डैशबोर्ड (लॉगिन के बाद दिखने वाला) --- */
+        /* --- लॉगिन के बाद दिखने वाला मेन डैशबोर्ड (कलरफुल 2D मैप) --- */
         #app-screen {
             display: none;
             height: 100vh;
             flex-direction: column;
         }
 
-        /* टॉप नेविगेशन बार (सर्च और लॉगआउट के साथ) */
         .top-navbar {
             height: 65px;
-            background: #1e1e1e;
+            background: #161b22;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 20px;
-            border-bottom: 1px solid #2c2c2c;
+            padding: 0 25px;
+            border-bottom: 1px solid #30363d;
             z-index: 10;
         }
 
-        .app-title {
-            font-size: 18px;
+        .brand-title {
+            font-size: 16px;
             font-weight: bold;
-            color: #3b82f6;
-        }
-
-        .search-box {
+            color: #58a6ff;
             display: flex;
             align-items: center;
-            background: #2a2a2a;
-            border-radius: 6px;
-            padding: 6px 12px;
-            border: 1px solid #444;
-            width: 250px;
+            gap: 8px;
         }
 
-        .search-box input {
-            background: transparent;
-            border: none;
-            color: #fff;
-            outline: none;
+        .search-container {
+            position: relative;
+            width: 300px;
+        }
+
+        .search-container input {
             width: 100%;
+            background: #0d1117;
+            border: 1px solid #30363d;
+            color: #fff;
+            padding: 8px 14px 8px 35px;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .search-container input:focus {
+            border-color: #58a6ff;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #8b949e;
             font-size: 14px;
         }
 
         .logout-btn {
-            background: #ef4444;
-            color: white;
-            border: none;
-            padding: 8px 14px;
-            border-radius: 6px;
+            background: rgba(248, 81, 73, 0.15);
+            color: #f85149;
+            border: 1px solid rgba(248, 81, 73, 0.4);
+            padding: 7px 14px;
+            border-radius: 8px;
             cursor: pointer;
-            font-weight: bold;
+            font-weight: 600;
             font-size: 13px;
+            transition: 0.2s;
         }
 
         .logout-btn:hover {
-            background: #dc2626;
+            background: #f85149;
+            color: #fff;
         }
 
-        /* मैप व्यू कंटेनर (2D ज़ूम और पैन सपोर्ट) */
+        /* मैप व्यूपोर्ट (Zoom & Pan) */
         #map-viewport {
             flex: 1;
             position: relative;
             overflow: hidden;
-            background: #0b0f19;
+            background: #090d16;
             cursor: grab;
         }
 
@@ -163,52 +194,64 @@
             transition: transform 0.05s ease-out;
         }
 
-        /* 2D भारत का नक्शा ग्राफिक / SVG या लेआउट स्टाइल */
-        .map-graphic {
-            width: 800px;
-            height: 800px;
+        /* कलरफुल 2D इंडिया मैप ग्रिड / लेआउट कैनवास */
+        .map-board {
+            width: 750px;
+            height: 750px;
             position: relative;
-            background: radial-gradient(circle, #1e293b 0%, #0f172a 100%);
-            border-radius: 20px;
-            border: 2px solid #334155;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            background: radial-gradient(circle, #161f30 0%, #0b111a 100%);
+            border-radius: 24px;
+            border: 2px solid #30363d;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.7);
         }
 
-        /* राज्यों के क्लिकेबल पॉइंट्स/बटन */
-        .state-node {
+        .map-heading {
             position: absolute;
-            background: rgba(59, 130, 246, 0.2);
-            border: 2px solid #3b82f6;
-            color: #fff;
-            padding: 8px 14px;
-            border-radius: 8px;
+            top: 20px;
+            width: 100%;
+            text-align: center;
+            font-size: 15px;
+            font-weight: bold;
+            color: #8b949e;
+            letter-spacing: 1px;
+        }
+
+        /* हर राज्य के लिए अलग-अलग सुंदर रंग और स्टाइल */
+        .state-box {
+            position: absolute;
+            padding: 10px 16px;
+            border-radius: 10px;
             font-size: 13px;
             font-weight: bold;
             cursor: pointer;
             transition: 0.2s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
             text-align: center;
+            border: 1px solid rgba(255,255,255,0.2);
         }
 
-        .state-node:hover {
-            background: #3b82f6;
+        .state-box:hover {
             transform: scale(1.1);
-            z-index: 5;
+            z-index: 10;
+            filter: brightness(1.2);
         }
 
-        /* महाराष्ट्र और अन्य लोकेशंस की पोजीशन (2D मैप पर) */
-        #state-maharashtra { top: 52%; left: 35%; }
-        #state-gujarat { top: 42%; left: 25%; }
-        #state-karnataka { top: 68%; left: 38%; }
-        #state-delhi { top: 28%; left: 40%; }
+        /* अलग-अलग राज्यों के डिस्टिंक्ट कलर्स और पोजीशंस */
+        #st-maharashtra { top: 52%; left: 32%; background: #2ea043; color: white; }
+        #st-gujarat     { top: 42%; left: 20%; background: #1f6feb; color: white; }
+        #st-rajasthan   { top: 30%; left: 23%; background: #9e6a03; color: white; }
+        #st-delhi       { top: 24%; left: 38%; background: #8957e5; color: white; }
+        #st-uttar-pradesh { top: 35%; left: 45%; background: #db6d28; color: white; }
+        #st-karnataka   { top: 68%; left: 36%; background: #f85149; color: white; }
+        #st-tamil-nadu  { top: 80%; left: 42%; background: #3fb950; color: white; }
+        #st-west-bengal { top: 45%; left: 68%; background: #a371f7; color: white; }
+        #st-punjab      { top: 18%; left: 32%; background: #e3b341; color: black; }
 
-        /* ज़ूम कंट्रोल्स साइड में */
+        /* साइड ज़ूम कंट्रोल्स */
         .zoom-controls {
             position: absolute;
-            bottom: 20px;
-            right: 20px;
+            bottom: 25px;
+            right: 25px;
             display: flex;
             flex-direction: column;
             gap: 8px;
@@ -216,64 +259,77 @@
         }
 
         .zoom-btn {
-            background: #1e1e1e;
+            background: #161b22;
             color: white;
-            border: 1px solid #444;
-            width: 40px;
-            height: 40px;
-            border-radius: 8px;
+            border: 1px solid #30363d;
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
             font-size: 20px;
             font-weight: bold;
             cursor: pointer;
             display: flex;
             justify-content: center;
             align-items: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
         }
 
         .zoom-btn:hover {
-            background: #3b82f6;
-            border-color: #3b82f6;
+            background: #30363d;
+            border-color: #58a6ff;
         }
     </style>
 </head>
 <body>
 
-    <!-- 1. पुराना लॉग इन स्क्रीन -->
+    <!-- 1. ऑरिजिनल NT Base लॉगिन स्क्रीन (फोटो के अनुसार) -->
     <div id="login-screen">
         <div class="login-card">
-            <h2>Welcome Back</h2>
-            <button class="btn btn-google" onclick="handleLogin('Google')">Sign in with Google</button>
-            <button class="btn btn-guest" onclick="handleLogin('Guest')">Continue as Guest</button>
+            <div class="login-logo">⛅</div>
+            <h2>NT Base</h2>
+            <p>Sign In to access live weather dashboard</p>
+            
+            <button class="btn-auth btn-google" onclick="handleLogin()">
+                <svg height="16" width="16" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"/></svg>
+                Continue with Google
+            </button>
+            
+            <button class="btn-auth btn-guest" onclick="handleLogin()">
+                👤 Continue as Guest
+            </button>
         </div>
     </div>
 
-    <!-- 2. लॉगिन के बाद दिखने वाला मुख्य ऐप स्क्रीन -->
+    <!-- 2. लॉगिन के बाद का मैप डैशबोर्ड -->
     <div id="app-screen">
-        <!-- टॉप बार: 3D/2D टैब, सर्च और लॉगआउट -->
         <div class="top-navbar">
-            <div class="app-title">📍 India Map Explorer (2D)</div>
-            <div class="search-box">
-                <input type="text" id="searchInput" placeholder="Search state or city..." onkeyup="filterStates()">
+            <div class="brand-title">📍 NT Base Map Dashboard</div>
+            <div class="search-container">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="searchInput" placeholder="Search state (e.g. Maharashtra)..." onkeyup="filterStates()">
             </div>
             <button class="logout-btn" onclick="handleLogout()">Log Out</button>
         </div>
 
-        <!-- इंटरेक्टिव 2D मैप व्यूपोर्ट (Zoom & Pan Enabled) -->
         <div id="map-viewport">
             <div id="map-container">
-                <div class="map-graphic">
-                    <div style="position: absolute; top: 20px; color: #94a3b8; font-size: 14px; font-weight: bold;">🇮🇳 INDIA 2D MAP INTERACTIVE</div>
+                <div class="map-board">
+                    <div class="map-heading">🇮🇳 INDIA 2D INTERACTIVE REGIONAL MAP</div>
                     
-                    <!-- राज्य के बटन्स (क्लिक करने पर पुणे/शहर देख सकते हैं) -->
-                    <div id="state-maharashtra" class="state-node" onclick="selectState('Maharashtra')">Maharashtra</div>
-                    <div id="state-gujarat" class="state-node" onclick="selectState('Gujarat')">Gujarat</div>
-                    <div id="state-karnataka" class="state-node" onclick="selectState('Karnataka')">Karnataka</div>
-                    <div id="state-delhi" class="state-node" onclick="selectState('Delhi')">Delhi</div>
+                    <!-- अलग-अलग रंगों वाले राज्य -->
+                    <div id="st-punjab" class="state-box" onclick="selectState('Punjab')">Punjab</div>
+                    <div id="st-delhi" class="state-box" onclick="selectState('Delhi')">Delhi</div>
+                    <div id="st-rajasthan" class="state-box" onclick="selectState('Rajasthan')">Rajasthan</div>
+                    <div id="st-gujarat" class="state-box" onclick="selectState('Gujarat')">Gujarat</div>
+                    <div id="st-maharashtra" class="state-box" onclick="selectState('Maharashtra')">Maharashtra 📍</div>
+                    <div id="st-uttar-pradesh" class="state-box" onclick="selectState('Uttar Pradesh')">Uttar Pradesh</div>
+                    <div id="st-karnataka" class="state-box" onclick="selectState('Karnataka')">Karnataka</div>
+                    <div id="st-tamil-nadu" class="state-box" onclick="selectState('Tamil Nadu')">Tamil Nadu</div>
+                    <div id="st-west-bengal" class="state-box" onclick="selectState('West Bengal')">West Bengal</div>
                 </div>
             </div>
 
-            <!-- ज़ूम इन / आउट बटन -->
+            <!-- ज़ूम कंट्रोल्स -->
             <div class="zoom-controls">
                 <button class="zoom-btn" onclick="zoomIn()">+</button>
                 <button class="zoom-btn" onclick="zoomOut()">-</button>
@@ -282,8 +338,8 @@
     </div>
 
     <script>
-        // लॉगिन और लॉगआउट फंक्शन
-        function handleLogin(type) {
+        // लॉगिन / लॉगआउट लॉजिक
+        function handleLogin() {
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('app-screen').style.display = 'flex';
         }
@@ -293,39 +349,33 @@
             document.getElementById('login-screen').style.display = 'flex';
         }
 
-        // राज्य क्लिक करने पर एक्शन
         function selectState(stateName) {
-            if(stateName === 'Maharashtra') {
-                alert("Maharashtra selected! Click on districts like Pune, Mumbai etc.");
-            } else {
-                alert(stateName + " selected!");
-            }
+            alert("Selected State: " + stateName + "\nExplore districts and details here!");
         }
 
-        // ज़ूम और पैन (Zoom & Pan) लॉजिक
+        // ज़ूम और पैन (Zoom & Pan) इंजन
         let scale = 1;
         const mapContainer = document.getElementById('map-container');
         const viewport = document.getElementById('map-viewport');
 
         function zoomIn() {
             if (scale < 2.5) {
-                scale += 0.2;
+                scale += 0.25;
                 updateTransform();
             }
         }
 
         function zoomOut() {
             if (scale > 0.6) {
-                scale -= 0.2;
+                scale -= 0.25;
                 updateTransform();
             }
         }
 
         function updateTransform() {
-            mapContainer.style.transform = `scale(${scale})`;
+            mapContainer.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
         }
 
-        // माउस ड्रैग (Pan) करने का फीचर
         let isDragging = false;
         let startX, startY;
         let translateX = 0, translateY = 0;
@@ -347,16 +397,17 @@
             isDragging = false;
         });
 
-        // सर्च फिल्टर फंक्शन
+        // सर्च फिल्टर फंक्शन (ऊपर सर्च बार से राज्य ढूंढने के लिए)
         function filterStates() {
             let query = document.getElementById('searchInput').value.toLowerCase();
-            let nodes = document.querySelectorAll('.state-node');
-            nodes.forEach(node => {
-                let text = node.innerText.toLowerCase();
+            let boxes = document.querySelectorAll('.state-box');
+            boxes.forEach(box => {
+                let text = box.innerText.toLowerCase();
                 if (text.includes(query)) {
-                    node.style.display = 'block';
+                    box.style.display = 'block';
+                    box.style.opacity = '1';
                 } else {
-                    node.style.display = query === '' ? 'block' : 'none';
+                    box.style.opacity = query === '' ? '1' : '0.2';
                 }
             });
         }
