@@ -3,130 +3,363 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D India Map</title>
+    <title>Map App - Login & Interactive Map</title>
     <style>
-        body {
+        * {
+            box-sizing: border-box;
             margin: 0;
-            overflow: hidden;
-            background-color: #050505;
-            font-family: sans-serif;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        #info {
-            position: absolute;
-            top: 15px;
-            width: 100%;
-            text-align: center;
+
+        body {
+            background-color: #121212;
             color: #ffffff;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- पुराना लॉगिन स्क्रीन स्टाइल (बिल्कुल सेफ और वैसा ही) --- */
+        #login-screen {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: #121212;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 100;
+        }
+
+        .login-card {
+            background: #1e1e1e;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+            text-align: center;
+            width: 350px;
+            border: 1px solid #2a2a2a;
+        }
+
+        .login-card h2 {
+            margin-bottom: 25px;
+            color: #fff;
+            font-size: 24px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-google {
+            background: #ffffff;
+            color: #333;
+        }
+
+        .btn-google:hover {
+            background: #f1f1f1;
+        }
+
+        .btn-guest {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-guest:hover {
+            background: #2563eb;
+        }
+
+        /* --- मेन ऐप डैशबोर्ड (लॉगिन के बाद दिखने वाला) --- */
+        #app-screen {
+            display: none;
+            height: 100vh;
+            flex-direction: column;
+        }
+
+        /* टॉप नेविगेशन बार (सर्च और लॉगआउट के साथ) */
+        .top-navbar {
+            height: 65px;
+            background: #1e1e1e;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            border-bottom: 1px solid #2c2c2c;
+            z-index: 10;
+        }
+
+        .app-title {
             font-size: 18px;
             font-weight: bold;
-            pointer-events: none;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+            color: #3b82f6;
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            background: #2a2a2a;
+            border-radius: 6px;
+            padding: 6px 12px;
+            border: 1px solid #444;
+            width: 250px;
+        }
+
+        .search-box input {
+            background: transparent;
+            border: none;
+            color: #fff;
+            outline: none;
+            width: 100%;
+            font-size: 14px;
+        }
+
+        .logout-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        .logout-btn:hover {
+            background: #dc2626;
+        }
+
+        /* मैप व्यू कंटेनर (2D ज़ूम और पैन सपोर्ट) */
+        #map-viewport {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            background: #0b0f19;
+            cursor: grab;
+        }
+
+        #map-viewport:active {
+            cursor: grabbing;
+        }
+
+        #map-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transform-origin: center center;
+            transition: transform 0.05s ease-out;
+        }
+
+        /* 2D भारत का नक्शा ग्राफिक / SVG या लेआउट स्टाइल */
+        .map-graphic {
+            width: 800px;
+            height: 800px;
+            position: relative;
+            background: radial-gradient(circle, #1e293b 0%, #0f172a 100%);
+            border-radius: 20px;
+            border: 2px solid #334155;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* राज्यों के क्लिकेबल पॉइंट्स/बटन */
+        .state-node {
+            position: absolute;
+            background: rgba(59, 130, 246, 0.2);
+            border: 2px solid #3b82f6;
+            color: #fff;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            text-align: center;
+        }
+
+        .state-node:hover {
+            background: #3b82f6;
+            transform: scale(1.1);
+            z-index: 5;
+        }
+
+        /* महाराष्ट्र और अन्य लोकेशंस की पोजीशन (2D मैप पर) */
+        #state-maharashtra { top: 52%; left: 35%; }
+        #state-gujarat { top: 42%; left: 25%; }
+        #state-karnataka { top: 68%; left: 38%; }
+        #state-delhi { top: 28%; left: 40%; }
+
+        /* ज़ूम कंट्रोल्स साइड में */
+        .zoom-controls {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            z-index: 10;
+        }
+
+        .zoom-btn {
+            background: #1e1e1e;
+            color: white;
+            border: 1px solid #444;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        .zoom-btn:hover {
+            background: #3b82f6;
+            border-color: #3b82f6;
         }
     </style>
 </head>
 <body>
 
-    <div id="info">3D India Map - Interactive Model</div>
+    <!-- 1. पुराना लॉग इन स्क्रीन -->
+    <div id="login-screen">
+        <div class="login-card">
+            <h2>Welcome Back</h2>
+            <button class="btn btn-google" onclick="handleLogin('Google')">Sign in with Google</button>
+            <button class="btn btn-guest" onclick="handleLogin('Guest')">Continue as Guest</button>
+        </div>
+    </div>
 
-    <!-- Three.js CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <!-- OrbitControls CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <!-- 2. लॉगिन के बाद दिखने वाला मुख्य ऐप स्क्रीन -->
+    <div id="app-screen">
+        <!-- टॉप बार: 3D/2D टैब, सर्च और लॉगआउट -->
+        <div class="top-navbar">
+            <div class="app-title">📍 India Map Explorer (2D)</div>
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Search state or city..." onkeyup="filterStates()">
+            </div>
+            <button class="logout-btn" onclick="handleLogout()">Log Out</button>
+        </div>
+
+        <!-- इंटरेक्टिव 2D मैप व्यूपोर्ट (Zoom & Pan Enabled) -->
+        <div id="map-viewport">
+            <div id="map-container">
+                <div class="map-graphic">
+                    <div style="position: absolute; top: 20px; color: #94a3b8; font-size: 14px; font-weight: bold;">🇮🇳 INDIA 2D MAP INTERACTIVE</div>
+                    
+                    <!-- राज्य के बटन्स (क्लिक करने पर पुणे/शहर देख सकते हैं) -->
+                    <div id="state-maharashtra" class="state-node" onclick="selectState('Maharashtra')">Maharashtra</div>
+                    <div id="state-gujarat" class="state-node" onclick="selectState('Gujarat')">Gujarat</div>
+                    <div id="state-karnataka" class="state-node" onclick="selectState('Karnataka')">Karnataka</div>
+                    <div id="state-delhi" class="state-node" onclick="selectState('Delhi')">Delhi</div>
+                </div>
+            </div>
+
+            <!-- ज़ूम इन / आउट बटन -->
+            <div class="zoom-controls">
+                <button class="zoom-btn" onclick="zoomIn()">+</button>
+                <button class="zoom-btn" onclick="zoomOut()">-</button>
+            </div>
+        </div>
+    </div>
 
     <script>
-        // 1. सीन, कैमरा और रेंडरर सेटअप
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x0b0f19);
-
-        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(0, -35, 30);
-
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(window.devicePixelRatio);
-        document.body.appendChild(renderer.domElement);
-
-        // 2. कंट्रोल्स (माउस से घुमाने के लिए)
-        const controls = new THREE.OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true;
-        controls.dampingFactor = 0.05;
-
-        // 3. लाइट्स (प्रकाश व्यवस्था)
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
-        scene.add(ambientLight);
-
-        const pointLight = new THREE.PointLight(0xff6b00, 1.5, 100);
-        pointLight.position.set(10, -10, 20);
-        scene.add(pointLight);
-
-        const dirLight = new THREE.DirectionalLight(0x00ffff, 1);
-        dirLight.position.set(-10, 20, 15);
-        scene.add(dirLight);
-
-        // 4. भारत के नक्शे के कोऑर्डिनेट्स का रफ आउटलाइन (प्रतीकात्मक 3D एक्सट्रूज़न के लिए)
-        // ध्यान दें: वेब पर सटीक геомет्री के लिए GeoJSON की जरूरत होती है, यहाँ हमने विज़ुअल इम्पैक्ट के लिए कस्टमाइज्ड 3D शेप तैयार किया है।
-        const indiaPoints = [
-            [0, 12], [2, 11], [4, 12], [6, 10], [5, 8], [7, 6], 
-            [6, 4], [4, 2], [2, -2], [0, -5], [-2, -8], [-4, -6], 
-            [-3, -3], [-5, -1], [-4, 2], [-6, 4], [-4, 7], [-2, 10], [0, 12]
-        ];
-
-        const indiaShape = new THREE.Shape();
-        indiaPoints.forEach((pt, index) => {
-            if (index === 0) indiaShape.moveTo(pt[0], pt[1]);
-            else indiaShape.lineTo(pt[0], pt[1]);
-        });
-
-        const extrudeSettings = {
-            steps: 2,
-            depth: 1.5,
-            bevelEnabled: true,
-            bevelThickness: 0.4,
-            bevelSize: 0.4,
-            bevelSegments: 3
-        };
-
-        const geometry = new THREE.ExtrudeGeometry(indiaShape, extrudeSettings);
-        geometry.center(); // सेंटर में लाने के लिए
-
-        // मटेरियल (शाइनी तिरंगा या मॉडर्न थीम)
-        const material = new THREE.MeshStandardMaterial({
-            color: 0xff9933,
-            roughness: 0.3,
-            metalness: 0.4,
-            wireframe: false
-        });
-
-        const indiaMesh = new THREE.Mesh(geometry, material);
-        scene.add(indiaMesh);
-
-        // बेस ग्रिड या प्लेटफॉर्म
-        const gridHelper = new THREE.GridHelper(50, 50, 0xff0000, 0x333333);
-        gridHelper.position.z = -1.5;
-        gridHelper.rotation.x = Math.PI / 2;
-        scene.add(gridHelper);
-
-        // 5. रिस्पॉन्सिव विंडो रिसाइज
-        window.addEventListener('resize', onWindowResize, false);
-
-        function onWindowResize() {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
+        // लॉगिन और लॉगआउट फंक्शन
+        function handleLogin(type) {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('app-screen').style.display = 'flex';
         }
 
-        // 6. एनीमेशन लूप
-        function animate() {
-            requestAnimationFrame(animate);
-            
-            // हल्का-हल्का रोटेशन ताकि मॉडल जीवंत लगे
-            indiaMesh.rotation.z += 0.005;
-
-            controls.update();
-            renderer.render(scene, camera);
+        function handleLogout() {
+            document.getElementById('app-screen').style.display = 'none';
+            document.getElementById('login-screen').style.display = 'flex';
         }
 
-        animate();
+        // राज्य क्लिक करने पर एक्शन
+        function selectState(stateName) {
+            if(stateName === 'Maharashtra') {
+                alert("Maharashtra selected! Click on districts like Pune, Mumbai etc.");
+            } else {
+                alert(stateName + " selected!");
+            }
+        }
+
+        // ज़ूम और पैन (Zoom & Pan) लॉजिक
+        let scale = 1;
+        const mapContainer = document.getElementById('map-container');
+        const viewport = document.getElementById('map-viewport');
+
+        function zoomIn() {
+            if (scale < 2.5) {
+                scale += 0.2;
+                updateTransform();
+            }
+        }
+
+        function zoomOut() {
+            if (scale > 0.6) {
+                scale -= 0.2;
+                updateTransform();
+            }
+        }
+
+        function updateTransform() {
+            mapContainer.style.transform = `scale(${scale})`;
+        }
+
+        // माउस ड्रैग (Pan) करने का फीचर
+        let isDragging = false;
+        let startX, startY;
+        let translateX = 0, translateY = 0;
+
+        viewport.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            startX = e.clientX - translateX;
+            startY = e.clientY - translateY;
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            translateX = e.clientX - startX;
+            translateY = e.clientY - startY;
+            mapContainer.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+        });
+
+        window.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+
+        // सर्च फिल्टर फंक्शन
+        function filterStates() {
+            let query = document.getElementById('searchInput').value.toLowerCase();
+            let nodes = document.querySelectorAll('.state-node');
+            nodes.forEach(node => {
+                let text = node.innerText.toLowerCase();
+                if (text.includes(query)) {
+                    node.style.display = 'block';
+                } else {
+                    node.style.display = query === '' ? 'block' : 'none';
+                }
+            });
+        }
     </script>
 </body>
 </html>
