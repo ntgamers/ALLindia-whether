@@ -13,7 +13,7 @@
         }
 
         body {
-            background-color: #1a1f2c; /* एकदम परफेक्ट डार्क ग्रे बैकग्राउंड */
+            background-color: #0d1117;
             color: #ffffff;
             height: 100vh;
             display: flex;
@@ -32,11 +32,13 @@
         }
 
         .login-card {
-            background: #222938; /* ओरिजिनल ग्रे शेड कार्ड */
-            border: 1px solid #2f384d;
+            background: rgba(22, 27, 34, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             padding: 40px 30px;
-            border-radius: 16px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
             text-align: center;
             width: 380px;
         }
@@ -55,7 +57,7 @@
 
         .login-card p {
             font-size: 13px;
-            color: #94a3b8;
+            color: #8b949e;
             margin-bottom: 30px;
         }
 
@@ -63,7 +65,7 @@
             width: 100%;
             padding: 12px 16px;
             margin-bottom: 14px;
-            border: 1px solid #334155;
+            border: 1px solid rgba(255, 255, 255, 0.15);
             border-radius: 10px;
             font-size: 14px;
             font-weight: 500;
@@ -72,26 +74,25 @@
             align-items: center;
             justify-content: center;
             gap: 10px;
-            transition: 0.2s;
+            transition: all 0.2s ease;
         }
 
         .btn-google {
             background: #ffffff;
-            color: #1e293b;
+            color: #24292e;
         }
 
         .btn-google:hover {
-            background: #f1f5f9;
+            background: #f3f4f6;
         }
 
         .btn-guest {
-            background: #2a3447;
+            background: rgba(255, 255, 255, 0.08);
             color: #f0f6fc;
-            border-color: #3b465f;
         }
 
         .btn-guest:hover {
-            background: #323f56;
+            background: rgba(255, 255, 255, 0.12);
         }
 
         /* --- डैशबोर्ड स्क्रीन (लॉगिन के बाद) --- */
@@ -104,11 +105,12 @@
         }
 
         .dashboard-card {
-            background: #222938; /* ओरिजिनल ग्रे शेड कार्ड */
-            border: 1px solid #2f384d;
+            background: rgba(22, 27, 34, 0.85);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             padding: 35px 30px;
-            border-radius: 16px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
             text-align: center;
             width: 380px;
         }
@@ -121,7 +123,7 @@
 
         .dashboard-card p {
             font-size: 12px;
-            color: #94a3b8;
+            color: #8b949e;
             margin-bottom: 25px;
         }
 
@@ -132,8 +134,8 @@
 
         .search-input {
             width: 100%;
-            background: #1a1f2c;
-            border: 1px solid #334155;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.15);
             padding: 12px 15px 12px 40px;
             border-radius: 10px;
             color: #fff;
@@ -142,7 +144,7 @@
         }
 
         .search-input:focus {
-            border-color: #3b82f6;
+            border-color: #58a6ff;
         }
 
         .search-icon-pos {
@@ -150,7 +152,7 @@
             left: 14px;
             top: 50%;
             transform: translateY(-50%);
-            color: #94a3b8;
+            color: #8b949e;
         }
 
         .btn-action {
@@ -165,37 +167,39 @@
         }
 
         .btn-search {
-            background: #3b82f6; /* ब्लू सर्च बटन */
+            background: #238636;
             color: white;
-            margin-bottom: 12px;
+            margin-bottom: 15px;
         }
 
         .btn-search:hover {
-            background: #2563eb;
+            background: #2ea043;
         }
 
         .btn-logout {
-            background: #ef4444; /* रेड लॉगआउट बटन */
-            color: white;
+            background: rgba(248, 81, 73, 0.15);
+            color: #f85149;
+            border: 1px solid rgba(248, 81, 73, 0.4);
         }
 
         .btn-logout:hover {
-            background: #dc2626;
+            background: #f85149;
+            color: #fff;
         }
 
         /* वेदर रिजल्ट बॉक्स */
         .weather-result {
             margin-top: 15px;
             padding: 15px;
-            background: #1a1f2c;
+            background: rgba(255, 255, 255, 0.04);
             border-radius: 10px;
-            border: 1px solid #334155;
+            border: 1px solid rgba(255, 255, 255, 0.08);
             display: none;
         }
 
         .weather-result h3 {
             font-size: 16px;
-            color: #60a5fa;
+            color: #58a6ff;
             margin-bottom: 5px;
         }
 
@@ -208,7 +212,7 @@
 
         .weather-desc {
             font-size: 13px;
-            color: #94a3b8;
+            color: #8b949e;
         }
     </style>
 </head>
@@ -244,7 +248,7 @@
             </div>
 
             <button class="btn-action btn-search" onclick="getWeather()">Search Weather</button>
-            <button class="btn-action btn-logout" onclick="logout()">Logout</button>
+            <button class="btn-action btn-logout" onclick="logout()">🚪 Logout</button>
 
             <!-- वेदर आउटपुट कार्ड -->
             <div id="weatherResult" class="weather-result">
@@ -278,7 +282,7 @@
             }
 
             document.getElementById('cityName').innerText = city.toUpperCase() + ", IN";
-            document.getElementById('weatherTemp').innerText = "28°C";
+            document.getElementById('weatherTemp').innerText = "23°C";
             document.getElementById('weatherDesc').innerText = "Few Clouds";
             resultBox.style.display = "block";
         }
